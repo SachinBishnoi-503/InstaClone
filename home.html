@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Instagram-like</title>
+    <link rel="stylesheet" href="./assets/css/home.css">
+    <link rel="shortcut icon" href="https://img.freepik.com/free-vector/instagram-vector-social-media-icon-7-june-2021-bangkok-thailand_53876-136728.jpg?t=st=1725092779~exp=1725096379~hmac=ca922283fa50522843979d47aca8b7d79a740141d9c98f0db80c4d9caf3b6fe3&w=1380" type="image/x-icon">
+    <style>
+        .video-call-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-call-content {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .video-call-content video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .video-call-content button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .video-call-content button:hover {
+            background: #cc0000;
+        }
+
+        /* Voice Call Modal */
+        .voice-call-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .voice-call-content {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .voice-call-content button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .voice-call-content button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="profile-section">
+            <img id="profileImage" src="https://via.placeholder.com/80" alt="Profile Image" class="profile-img">
+            <div class="profile-info">
+                <p><strong id="sidebarUsername">user1</strong></p>
+                <p id="sidebarEmail">user1@example.com</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="#" id="homeLink" onclick="openHomeSection(); setActiveTab('home')">Home</a>
+            <a href="#" id="exploreLink" onclick="setActiveTab('explore')">Explore</a>
+            <a href="#" id="messagesLink" onclick="openMessagesSection(); setActiveTab('messages')">Messages</a>
+            <a href="#" id="profileLink" onclick="openProfileModal(); setActiveTab('profile')">Profile</a>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <div id="friendsSection" class="friends-section">
+            <h3>Friends</h3>
+            <div id="friendsList">
+                <!-- Friends will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="logo">  InstaClone</div>
+        <button class="upload-post-btn mr-20" onclick="openPostUploadModal()">Upload Post</button>
+    </div>
+
+    <div class="content">
+        <div id="feedContainer" class="feed-container">
+            <!-- Posts will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Profile</h3>
+            <img id="profileImages" src="https://via.placeholder.com/80" alt="Profile Image" class="profile-img">
+            <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="uploadProfileImage()">
+            <input type="text" id="usernameInput" placeholder="New username">
+            <button class="upload-btn" onclick="updateProfile()">Update</button>
+            <button class="close-btn" onclick="closeProfileModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Post Upload Modal -->
+    <div id="postUploadModal" class="post-upload-modal modal">
+        <div class="modal-content">
+            <h3>Upload New Post</h3>
+            <input type="text" id="postDescriptionInput" placeholder="Description">
+            <input type="file" id="postImageInput" accept="image/*">
+            <button class="upload-btn" onclick="uploadPost()">Post</button>
+            <button class="close-btn" onclick="closePostUploadModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div id="chatContainer" class="chat-container">
+        <div class="chat-header">Messages</div>
+        <div id="videoCallModal" class="video-call-modal">
+            <div class="video-call-content">
+                <video id="localVideo" autoplay muted></video>
+                <div class="video-call-controls">
+                    <button id="muteButton" onclick="toggleMute()">Mute</button>
+                    <button onclick="closeVideoCall()">End Call</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Call Modal -->
+        <div id="voiceCallModal" class="voice-call-modal">
+            <div class="voice-call-content">
+                <h3>Voice Call</h3>
+                <div id="voiceCallStatus">Not Connected</div>
+                <button id="startVoiceCallButton" onclick="startVoiceCall()">Start Call</button>
+                <button id="endVoiceCallButton" onclick="endVoiceCall()">End Call</button>
+            </div>
+        </div>
+        <div id="chatList" class="chat-list">
+            <!-- Chat list items will be dynamically added here -->
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <!-- Chat messages will be dynamically added here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to log out and redirect to login page
+        function logout() {
+            window.location.href = 'login.html'; // Change to your actual login page URL
+        }
+
+        // Function to open the profile modal
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        // Function to close the profile modal
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        // Function to upload the profile image
+        function uploadProfileImage() {
+            const fileInput = document.getElementById('fileInput');
+            const profileImageSidebar = document.getElementById('profileImage');
+            const profileImageModal = document.getElementById('profileImages');
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    profileImageSidebar.src = e.target.result;
+                    profileImageModal.src = e.target.result;
+                }
+
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+        }
+
+        // Function to update the profile information
+        function updateProfile() {
+            const usernameInput = document.getElementById('usernameInput').value;
+            const sidebarUsername = document.getElementById('sidebarUsername');
+
+            sidebarUsername.textContent = usernameInput;
+
+            closeProfileModal();
+        }
+
+        // Function to open the post upload modal
+        function openPostUploadModal() {
+            document.getElementById('postUploadModal').style.display = 'flex';
+        }
+
+        // Function to close the post upload modal
+        function closePostUploadModal() {
+            document.getElementById('postUploadModal').style.display = 'none';
+        }
+
+        // Function to upload a new post
+        function uploadPost() {
+            const description = document.getElementById('postDescriptionInput').value;
+            const fileInput = document.getElementById('postImageInput');
+            const feedContainer = document.getElementById('feedContainer');
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const post = document.createElement('div');
+                    post.classList.add('post');
+
+                    post.innerHTML = `
+                        <img src="${e.target.result}" alt="Post Image">
+                        <div class="post-content">
+                            <div class="username">user1</div>
+                            <div class="description">${description}</div>
+                            <div class="post-actions">
+                                <button>❤️ Like</button>
+                                <button>💬 Comment</button>
+                            </div>
+                        </div>
+                    `;
+
+                    feedContainer.prepend(post);
+                }
+
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+
+            closePostUploadModal();
+        }
+
+        // Function to open the messages section
+        function openMessagesSection() {
+            document.querySelector('.feed-container').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'flex';
+            document.getElementById('friendsSection').style.display = 'block';
+            loadFriendsList();
+        }
+
+        // Function to open the home section
+        function openHomeSection() {
+            document.querySelector('.feed-container').style.display = 'flex';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('friendsSection').style.display = 'none';
+        }
+
+        // Function to close the messages section
+        function closeMessagesSection() {
+            document.querySelector('.feed-container').style.display = 'flex';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('friendsSection').style.display = 'none';
+        }
+
+        // Function to load the friends list
+        function loadFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = ''; // Clear existing friends
+
+            const friends = [
+                { username: 'ritesh bishnoi', image: 'https://img.freepik.com/free-photo/close-up-monkey-tree_23-2150822916.jpg?semt=ais_hybrid' },
+                { username: 'Akash', image: 'https://img.freepik.com/free-photo/side-view-male-hacker-with-gloves-laptop_23-2148578161.jpg?ga=GA1.1.1574928417.1725086439&semt=ais_hybrid' },
+                { username: 'mohit', image: 'https://img.freepik.com/free-photo/cartoon-superhero-illustration_23-2151732575.jpg?ga=GA1.1.1574928417.1725086439&semt=ais_hybrid' }
+            ];
+
+            friends.forEach(friend => {
+                const friendItem = document.createElement('div');
+                friendItem.classList.add('friend-item');
+                friendItem.innerHTML = `
+                    <img src="${friend.image}" alt="Friend Image">
+                    <span>${friend.username}</span>
+                `;
+                friendItem.onclick = () => openChatMessages(friend.username);
+                friendsList.appendChild(friendItem);
+            });
+        }
+
+        // Function to open chat messages for a particular user
+        function openChatMessages(username) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message">
+                    <img src="https://via.placeholder.com/30" alt="User Image">
+                    <div class="message-content">
+                        <span class="username">${username}</span>
+                        <span class="text">Hello!</span>
+                    </div>
+                </div>
+                <div class="message">
+                    <img src="https://via.placeholder.com/30" alt="User Image">
+                    <div class="message-content">
+                        <span class="username">You</span>
+                        <span class="text">Hi there!</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to send a message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const messageText = messageInput.value;
+
+            if (messageText.trim() !== '') {
+                const message = document.createElement('div');
+                message.classList.add('message');
+
+                message.innerHTML = `
+                    <img src="https://via.placeholder.com/30" alt="User Image">
+                    <div class="message-content">
+                        <span class="username">You</span>
+                        <span class="text">${messageText}</span>
+                    </div>
+                `;
+
+                chatMessages.append(message);
+                messageInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Function to set the active tab
+        function setActiveTab(tab) {
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            const activeLink = document.getElementById(`${tab}Link`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Function to create default posts in the feed
+        function createDefaultPosts() {
+            const feedContainer = document.getElementById('feedContainer');
+            const defaultPosts = [
+                {
+                    username: 'With nature',
+                    description: 'Beautiful sunset at the beach!',
+                    image: 'https://img.freepik.com/premium-photo/scenic-view-sea-against-orange-sky_1048944-7023782.jpg?ga=GA1.1.1574928417.1725086439&semt=ais_hybrid'
+                },
+                {
+                    username: 'dominos',
+                    description: 'Delicious homemade pizza!',
+                    image: 'https://img.freepik.com/premium-photo/tasty-pizza_1258306-2928.jpg?ga=GA1.1.1574928417.1725086439&semt=ais_hybrid'
+                },
+                {
+                    username: 'Joker',
+                    description: 'Exciting day at the amusement park!',
+                    image: 'https://img.freepik.com/premium-photo/amusement-park-smart-city_1199903-61588.jpg?ga=GA1.1.1574928417.1725086439&semt=ais_hybrid'
+                }
+            ];
+
+            defaultPosts.forEach(postData => {
+                const post = document.createElement('div');
+                post.classList.add('post');
+
+                post.innerHTML = `
+                    <img src="${postData.image}" alt="Post Image">
+                    <div class="post-content">
+                        <div class="username">${postData.username}</div>
+                        <div class="description">${postData.description}</div>
+                        <div class="post-actions">
+                            <button>❤️ Like</button>
+                            <button>💬 Comment</button>
+                        </div>
+                    </div>
+                `;
+
+                feedContainer.append(post);
+            });
+        }
+
+        // Event listener to handle Enter key press for sending messages
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+            const tab = path.includes('home') ? 'home' :
+                path.includes('explore') ? 'explore' :
+                    path.includes('messages') ? 'messages' : 'profile';
+            setActiveTab(tab);
+            createDefaultPosts();
+
+            // Add event listener to send message on Enter key press
+            const messageInput = document.getElementById('messageInput');
+            messageInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default action (e.g., form submission)
+                    sendMessage();
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+            const tab = path.includes('home') ? 'home' :
+                path.includes('explore') ? 'explore' :
+                    path.includes('messages') ? 'messages' : 'profile';
+            setActiveTab(tab);
+
+            // Ensure Home section is displayed by default
+            if (tab === 'home') {
+                openHomeSection();
+            } else if (tab === 'messages') {
+                openMessagesSection();
+            }
+
+            createDefaultPosts();
+
+            // Add event listener to send message on Enter key press
+            const messageInput = document.getElementById('messageInput');
+            messageInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default action (e.g., form submission)
+                    sendMessage();
+                }
+            });
+        });
+        // Function to open video call modal
+        function openVideoCall() {
+            document.getElementById('videoCallModal').style.display = 'flex';
+            startVideoCall();
+        }
+
+        // Function to close video call modal
+        function closeVideoCall() {
+            document.getElementById('videoCallModal').style.display = 'none';
+            stopVideoCall();
+        }
+
+        // Function to start video call (simplified)
+        function startVideoCall() {
+            const localVideo = document.getElementById('localVideo');
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    localVideo.srcObject = stream;
+                })
+                .catch(error => console.error('Error accessing media devices.', error));
+        }
+
+        // Function to stop video call
+        function stopVideoCall() {
+            const localVideo = document.getElementById('localVideo');
+            const stream = localVideo.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                localVideo.srcObject = null;
+            }
+        }
+
+        // Function to open voice call modal
+        function openVoiceCall() {
+            document.getElementById('voiceCallModal').style.display = 'flex';
+        }
+
+        // Function to start voice call
+        function startVoiceCall() {
+            // Implement logic to start voice call
+            console.log('Voice call started');
+        }
+
+        // Function to end voice call
+        function endVoiceCall() {
+            // Implement logic to end voice call
+            console.log('Voice call ended');
+            document.getElementById('voiceCallModal').style.display = 'none';
+        }
+
+        // Function to open chat messages for a particular user with video and voice call options
+        function openChatMessages(username) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message">
+                    <img src="https://via.placeholder.com/30" alt="User Image">
+                    <div class="message-content">
+                        <span class="username">${username}</span>
+                        <span class="text">Hello!</span>
+                    </div>
+                </div>
+                <div class="message">
+                    <img src="https://via.placeholder.com/30" alt="User Image">
+                    <div class="message-content">
+                        <span class="username">You</span>
+                        <span class="text">Hi there!</span>
+                    </div>
+                </div>
+                <div class="message-actions">
+                    <button onclick="openVoiceCall()">Voice Call</button>
+                    <button onclick="openVideoCall()">Video Call</button>
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+
+</html>
